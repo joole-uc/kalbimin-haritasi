@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kalbimin Haritası</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #ffe6f0, #fff0f5);
+      font-family: "Arial", sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      color: #d63384;
+    }
+
+    .title {
+      text-align: center;
+      padding: 20px;
+      font-size: 2rem;
+    }
+
+    .map-container {
+      position: relative;
+      width: 100%;
+      height: 90vh;
+    }
+
+    .memory {
+      position: absolute;
+      font-size: 2.5rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+      user-select: none;
+      user-drag: none;
+      -webkit-user-drag: none;
+    }
+
+    .memory:hover {
+      transform: scale(1.5);
+    }
+
+    .popup {
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -30%);
+      background: white;
+      padding: 20px;
+      border: 2px solid #d63384;
+      border-radius: 12px;
+      z-index: 999;
+      box-shadow: 0 0 10px #888;
+      max-width: 300px;
+      text-align: center;
+      display: none;
+    }
+
+    .popup button {
+      margin-top: 10px;
+      background: #d63384;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #a44a7c;
+    }
+
+    /* Başlat butonu stilleri */
+    #startMusicBtn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #d63384;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 1000;
+      display: none; /* İlk başta gizli */
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="title">Kalbimin Haritası</h1>
+
+  <div class="map-container" id="map"></div>
+
+  <div class="popup" id="popup">
+    <p id="memory-text"></p>
+    <img
+      id="memory-img"
+      src=""
+      alt="Anı Fotoğrafı"
+      style="max-width: 100%; border-radius: 12px; margin-top: 10px;"
+    />
+    <button onclick="closePopup()">Kapat</button>
+  </div>
+
+  <button id="startMusicBtn">Bitanem Müziği Burdan Başlat</button>
+
+  <footer>
+    <small>Bu site, kalbimin haritasıdır. Tüm yollar seni gösteriyor. Kalbimin tek sahibine hazırladım CANIM KARIM.  💖</small>
+  </footer>
+
+  <script>
+    const memories = [
+      { text: "Seninle başlayan her şey, hayatımın en güzel masalı oldu.", img: "fotograflar/1.jpeg" },
+      { text: "Gözlerinin içine baktığımda kayboldum.", img: "fotograflar/2.jpeg" },
+      { text: "Seninle geçirdiğim her saniye bir şiir gibi.", img: "fotograflar/3.jpeg" },
+      { text: "Kalbim seninle her gün biraz daha büyüyor.", img: "fotograflar/4.jpeg" },
+      { text: "Ellerini tutmak, dünyayı unutturuyor bana.", img: "fotograflar/5.jpeg" },
+      { text: "Seninle güldüğüm o güzel akşamlar…", img: "fotograflar/6.jpeg" },
+      { text: "Birlikte hayal kurduğumuz sonsuzluk.", img: "fotograflar/7.jpeg" },
+      { text: "Senin yanında kendim olabiliyorum.", img: "fotograflar/8.jpeg" },
+      { text: "Gözlerinde kaybolmak istiyorum, her defasında.", img: "fotograflar/9.jpeg" },
+      { text: "Seninle paylaştığım her sır, bir hazine.", img: "fotograflar/10.jpeg" },
+      { text: "Kalbimi sana açtığım ilk an.", img: "fotograflar/11.jpeg" },
+      { text: "Seninle hayat daha güzel, daha anlamlı.", img: "fotograflar/12.jpeg" },
+      { text: "Birlikte yazdığımız küçük hikayemiz.", img: "fotograflar/13.jpeg" },
+      { text: "Seni düşündüğümde içim ısınıyor.", img: "fotograflar/14.jpeg" },
+      { text: "Her sabah seninle uyanmak istiyorum.", img: "fotograflar/15.jpeg" },
+      { text: "Gözlerindeki ışık, yolumu aydınlatıyor.", img: "fotograflar/16.jpeg" },
+      { text: "Birlikte geçirdiğimiz her an paha biçilemez.", img: "fotograflar/17.jpeg" },
+      { text: "Sesin, ruhuma en güzel melodi.", img: "fotograflar/18.jpeg" },
+      { text: "Seninle her zorluk aşılır, her engel kolay.", img: "fotograflar/19.jpeg" },
+      { text: "Hayatımda olduğun için teşekkür ederim.", img: "fotograflar/20.jpeg" },
+      { text: "Seninle olmak, dünyadaki en güzel his.", img: "fotograflar/21.jpeg" },
+      { text: "Kalbim sadece sana ait.", img: "fotograflar/22.jpeg" },
+      { text: "Seninle geçen zamanın değeri ölçülemez.", img: "fotograflar/23.jpeg" },
+      { text: "Gözlerinle bana baktığında dünya duruyor.", img: "fotograflar/24.jpeg" },
+      { text: "Sonsuza dek elini bırakmayacağım.", img: "fotograflar/25.jpeg" },
+      { text: "Sen benim en değerli hazinemsin.", img: "fotograflar/26.jpeg" },
+      { text: "Her an seni daha çok seviyorum.", img: "fotograflar/27.jpeg" },
+      { text: "Seninle hayat bir masal gibi.", img: "fotograflar/28.jpeg" },
+      { text: "Aşkımızın her sayfası özel ve eşsiz.", img: "fotograflar/29.jpeg" },
+      { text: "Senin yanında kendimi tamamlanmış hissediyorum.", img: "fotograflar/30.jpeg" },
+      { text: "Gülüşün karanlık günlerime ışık oluyor.", img: "fotograflar/31.jpeg" },
+      { text: "Kalbim sadece senin adını fısıldıyor.", img: "fotograflar/32.jpeg" },
+      { text: "Seninle olmak hayallerimi gerçeğe dönüştürdü.", img: "fotograflar/33.jpeg" },
+      { text: "Her baktığımda sana aşık oluyorum yeniden.", img: "fotograflar/34.jpeg" },
+      { text: "Seninle geçirdiğim zaman, zamanın en güzel hali.", img: "fotograflar/35.jpeg" },
+      { text: "Hayatın anlamı seninle daha derin.", img: "fotograflar/36.jpeg" },
+      { text: "Aşkımız, en güzel şarkının sözleri gibi.", img: "fotograflar/37.jpeg" },
+      { text: "Seninle beraber geleceğe yürümek istiyorum.", img: "fotograflar/38.jpeg" },
+      { text: "Kalbim sana her gün daha çok ait oluyor.", img: "fotograflar/39.jpeg" },
+      { text: "Sen benim sonsuzluk hikayemsin.", img: "fotograflar/40.jpeg" }
+    ];
+
+    const map = document.getElementById("map");
+
+    memories.forEach((memory, index) => {
+      const div = document.createElement("div");
+      div.classList.add("memory");
+      div.innerText = "❤️";
+
+      const row = Math.floor(index / 8);
+      const col = index % 8;
+
+      div.style.position = "absolute";
+      div.style.top = `${10 + row * 10}%`;
+      div.style.left = `${10 + col * 10}%`;
+
+      div.style.fontSize = "2rem";
+      div.style.cursor = "pointer";
+
+      div.onclick = () => showMemory(index);
+
+      map.appendChild(div);
+    });
+
+    function showMemory(index) {
+      const memory = memories[index];
+      const popup = document.getElementById("popup");
+      const textEl = document.getElementById("memory-text");
+      const imgEl = document.getElementById("memory-img");
+
+      textEl.innerText = memory.text;
+      imgEl.src = memory.img;
+      imgEl.style.display = "block";
+
+      popup.style.display = "block";
+    }
+
+    function closePopup() {
+      const popup = document.getElementById("popup");
+      popup.style.display = "none";
+    }
+
+    // Müzik kontrolü
+    const audio = new Audio('muzik.mp3');
+    audio.loop = true;
+
+    const startBtn = document.getElementById('startMusicBtn');
+
+    function tryAutoPlay() {
+      audio.play().then(() => {
+        // Otomatik çalma başarılı, butonu gizle
+        startBtn.style.display = 'none';
+      }).catch(() => {
+        // Otomatik çalma engellendi, butonu göster
+        startBtn.style.display = 'block';
+      });
+    }
+
+    window.addEventListener('load', () => {
+      tryAutoPlay();
+    });
+
+    startBtn.addEventListener('click', () => {
+      audio.play();
+      startBtn.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
